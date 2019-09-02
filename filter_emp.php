@@ -1,0 +1,60 @@
+<?php
+session_start();
+include "connect.php";
+date_default_timezone_set('Asia/Dhaka');
+if(isset($_POST["from_date"], $_POST["to_date"], $_POST["id"]))
+{
+    $emp_id=$_POST['id'];
+    $output= '';
+    $res= mysqli_query($db,"SELECT * FROM history_employment WHERE emp_id='$emp_id' AND `date` BETWEEN '".$_POST["from_date"]."' AND '".$_POST["to_date"]."' ORDER BY `serial` DESC");
+    $output .= "<table align='center' class='table table-striped table-bordered'> ";
+    $output .= "<tr>";
+    $output .= "<th width='150px'>Entrier</th>";
+    $output .= "<th width='150px'>Entry Date</th>";
+    $output .= "<th width='150px'>Type</th>";
+    $output .= "<th width='150px'>Approval</th>";
+    $output .= "<th width='150px'>Effective Date</th>";
+    $output .= "<th width='150px'>Separation Date</th>";
+    $output .= "<th width='150px'>Reference</th>";
+    $output .= "<th width='150px'>Remarks</th>";
+    $output .= "<th width='20px'>Edit</th>";
+    $output .= "</tr>";
+
+    if($res -> num_rows > 0)
+    {
+        while ($row=mysqli_fetch_array($res)) {
+            $output .= "<tr>";
+            if($row[3]=='10001')
+            {
+                $output .= "<td>Admin</td>";
+            }
+            else
+            {
+                $id=$row[3];
+                $sql ="SELECT * FROM employee WHERE ID='$id'";
+                $result=mysqli_query($db, $sql);
+                $line=mysqli_fetch_array($result);
+                $output .= "<td>".$line['First Name']." ".$line['Last Name']."</td>";
+            }
+            $output .= "<td>".date_format(date_create($row['entry_date']),"M d, Y")."</td>";
+            $output .= "<td>".$row['employment_type']."</td>";
+
+            $output .= "<td>".date_format(date_create($row['approval_date']),"M d, Y")."</td>";
+            $output .= "<td>".date_format(date_create($row['eff_date']),"M d, Y")."</td>";
+            $output .= "<td>".date_format(date_create($row['date']),"M d, Y")."</td>";
+            $output .= "<td>".$row['ref']."</td>";
+            $output .= "<td><pre>".$row['remarks']."</pre></td>";
+            $output .= "<td><a href='edit_remark_emp.php?id=".$row['serial']."' class='glyphicon glyphicon-pencil'></a></td>";
+            $output .= "</tr>";
+        }
+    }
+    else
+    {
+        $output .= "<tr class='alert-danger'><td colspan='8'>No Results Found</td></tr>";
+    }
+    $output .= "</table>";
+    echo $output;
+
+}
+
+?>
